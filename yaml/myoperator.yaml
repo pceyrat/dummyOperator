@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: myoperator
+  name: myoperator
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: myoperator
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myoperator
+  name: myoperator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myoperator
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: myoperator
+    spec:
+      containers:
+      - env:
+        - name: PORT
+          value: "80"
+        - name: SHOW_HEALTH_DETAILS
+          value: "never"
+        image: myoperator:1.0.0
+        name: myoperator
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /dummy/health
+            port: 80
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /dummy/info
+            port: 80
+        resources: {}
+status: {}

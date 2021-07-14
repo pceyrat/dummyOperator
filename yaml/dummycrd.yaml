@@ -1,0 +1,67 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: dummies.xgeeks.ki.com
+spec:
+  group: xgeeks.ki.com
+  versions:
+    - name: v1beta1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              required:
+              - quote
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  default: 1
+                quote:
+                  type: string
+                sleep:
+                  type: integer
+                  default: 120
+                extra:
+                  type: array
+                  items:
+                    type: string
+            status:
+              type: object
+              properties:
+                timesChanged:
+                  type: integer
+                  default: 0
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Replicas
+          type: integer
+          description: The number of pods launched by the deployment
+          jsonPath: .spec.replicas
+        - name: Quote
+          type: string
+          description: The quote
+          jsonPath: .spec.quote
+        - name: Sleep
+          type: integer
+          description: The time it will sleep before completing
+          jsonPath: .spec.sleep
+        - name: Number of changes
+          type: integer
+          description: The number of changes
+          jsonPath: .status.timesChanged
+          priority: 1
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+  scope: Namespaced
+  names:
+    plural: dummies
+    singular: dummy
+    kind: Dummy
+    shortNames:
+    - dm

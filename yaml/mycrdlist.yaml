@@ -1,0 +1,24 @@
+apiVersion: v1
+items:
+- apiVersion: xgeeks.ki.com/v1beta1
+  kind: Dummy
+  metadata:
+    name: mycrd1
+  spec:
+    replicas: 3
+    quote: Be yourself; everyone else is already taken.
+    extra:
+    - Oscar Wilde
+- apiVersion: xgeeks.ki.com/v1beta1
+  kind: Dummy
+  metadata:
+    name: mycrd2
+  spec:
+    replicas: 3
+    quote: A room without books is like a body without a soul.
+    extra:
+    - Marcus Tullius Cicero
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
