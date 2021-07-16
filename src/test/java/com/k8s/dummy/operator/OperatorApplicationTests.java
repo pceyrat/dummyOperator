@@ -12,6 +12,9 @@ class OperatorApplicationTests {
 	@MockBean
 	private DummyOperator xGeeksController;
 
+	@MockBean
+	private OperatorConfigs configs;
+
 	@Test
 	void contextLoads() {
 	}

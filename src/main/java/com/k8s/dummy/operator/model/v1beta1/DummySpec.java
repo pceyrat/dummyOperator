@@ -19,7 +19,7 @@ public class DummySpec {
         return this.quote;
     }
 
-    public void setImage(int sleep) {
+    public void setSleep(int sleep) {
         this.sleep = sleep;
     }
 

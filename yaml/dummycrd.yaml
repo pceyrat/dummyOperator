@@ -27,6 +27,7 @@ spec:
                   default: 120
                 extra:
                   type: array
+                  default: []
                   items:
                     type: string
             status:

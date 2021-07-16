@@ -6,9 +6,9 @@ items:
     name: mycrd1
   spec:
     replicas: 3
-    quote: Be yourself; everyone else is already taken.
+    quote: Of all the words of mice and men, the saddest are, "It might have been".
     extra:
-    - Oscar Wilde
+    - Kurt Vonnegut 
 - apiVersion: xgeeks.ki.com/v1beta1
   kind: Dummy
   metadata:
