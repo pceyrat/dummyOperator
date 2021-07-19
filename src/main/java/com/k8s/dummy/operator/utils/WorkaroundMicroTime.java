@@ -12,16 +12,17 @@ import java.time.format.DateTimeFormatter;
 */
 public class WorkaroundMicroTime extends MicroTime {
 
-    private static final DateTimeFormatter k8sMicroTime = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'.'SSSSSSXXX");
-    private final String k8sFormattedMicroTime;
+  private static final DateTimeFormatter k8sMicroTime =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'.'SSSSSSXXX");
+  private final String k8sFormattedMicroTime;
 
-    public WorkaroundMicroTime(ZonedDateTime dateTime) {
-        this.k8sFormattedMicroTime = k8sMicroTime.format(dateTime);
-    }
+  public WorkaroundMicroTime(ZonedDateTime dateTime) {
+    this.k8sFormattedMicroTime = k8sMicroTime.format(dateTime);
+  }
 
-    @JsonValue
-    public String serialise() {
-        return this.k8sFormattedMicroTime;
-    }
+  @JsonValue
+  public String serialise() {
+    return this.k8sFormattedMicroTime;
+  }
 
 }

@@ -13,29 +13,37 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("xgeeks.ki.com")
 public class Dummy extends CustomResource<DummySpec, DummyStatus> implements Namespaced {
 
-    public ObjectReference getObjectReference() {
-        return new ObjectReferenceBuilder().withApiVersion(getApiVersion())
-                                            .withKind(getKind())
-                                            .withName(getMetaName())
-                                            .withNamespace(getMetaspace())
-                                            .withUid(getMetadata().getUid())
-                                            .build();
-    }
+  /** Create ObjectReference using Dummy attributes.
+   * @return ObjectReference
+   */
+  public ObjectReference getObjectReference() {
+    return new ObjectReferenceBuilder()
+                  .withApiVersion(getApiVersion())
+                  .withKind(getKind())
+                  .withName(getMetaName())
+                  .withNamespace(getMetaspace())
+                  .withUid(getMetadata().getUid())
+                  .build();
+  }
 
-    public OwnerReference getOwnerReference() {
-        return new OwnerReferenceBuilder().withController(true)
-                                            .withApiVersion(getApiVersion())
-                                            .withKind(getKind())
-                                            .withName(getMetaName())
-                                            .withUid(getMetadata().getUid())
-                                            .build();
-    }
+  /** Create OwnerReference using Dummy attributes.
+   * @return OwnerReference
+   */
+  public OwnerReference getOwnerReference() {
+    return new OwnerReferenceBuilder()
+                  .withController(true)
+                  .withApiVersion(getApiVersion())
+                  .withKind(getKind())
+                  .withName(getMetaName())
+                  .withUid(getMetadata().getUid())
+                  .build();
+  }
 
-    public String getMetaName() {
-        return getMetadata().getName();
-    }
+  public String getMetaName() {
+    return getMetadata().getName();
+  }
 
-    public String getMetaspace() {
-        return getMetadata().getNamespace();
-    }
+  public String getMetaspace() {
+    return getMetadata().getNamespace();
+  }
 }
