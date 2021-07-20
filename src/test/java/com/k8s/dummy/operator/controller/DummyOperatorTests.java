@@ -13,7 +13,6 @@ import static org.mockito.Mockito.times;
 import com.k8s.dummy.operator.controller.client.EnhancedClient;
 import com.k8s.dummy.operator.model.v1beta1.Dummy;
 import com.k8s.dummy.operator.model.v1beta1.DummySpec;
-
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -23,11 +22,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
-
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,12 +41,15 @@ public class DummyOperatorTests {
   private static AsyncTaskExecutor asyncTaskExecuterMock;
   private static DummyOperator dummyOperator;
 
-  private static  final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+  private static final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
   private final ObjectMeta defaultMetadata = new ObjectMetaBuilder().withName("testName")
                                                               .withNamespace("testNamespace")
                                                               .build();
   private Dummy dummy;
 
+  /** Create DummyOperator object with mocks except for kindName and queue.
+   * EnhancedClient mock does nothing when a method that would imply a change is called.
+   */
   @BeforeAll
   public static void setup() {
     enhancedClientMock = mock(EnhancedClient.class);
@@ -71,6 +71,9 @@ public class DummyOperatorTests {
                                       asyncTaskExecuterMock);
   }
 
+  /** Create a Dummy object with a defaultMetadata, some default attributes for the specification
+   * and without a status.
+   */
   @BeforeEach
   public void dummySetup() {
     dummy = new Dummy();
@@ -87,7 +90,7 @@ public class DummyOperatorTests {
   }
 
   @Test
-public void testPodTemplateCreation() {
+  public void testPodTemplateCreation() {
     PodTemplateSpec podtemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
 
     assertEquals(1, podtemplateSpec.getMetadata().getLabels().size());
@@ -97,16 +100,16 @@ public void testPodTemplateCreation() {
     assertEquals("busybox", podtemplateSpec.getSpec().getContainers().get(0).getImage());
     assertEquals(dummy.getMetaName() + "-container",
                  podtemplateSpec.getSpec().getContainers().get(0).getName());
-}
+  }
 
   @Test
-public void testPodTemplateCreationFailedIfFieldsNotDefined() {
+  public void testPodTemplateCreationFailedIfFieldsNotDefined() {
     dummy.setSpec(new DummySpec());;
     assertThrows(NullPointerException.class, () -> dummyOperator.generatePodTemplateSpec(dummy));
-}
+  }
 
   @Test
-public void testDeploymentCreation() {
+  public void testDeploymentCreation() {
     Deployment deployment = dummyOperator.generateDeployment(dummy);
 
     assertEquals(dummy.getMetaName(), deployment.getMetadata().getName());
@@ -120,10 +123,10 @@ public void testDeploymentCreation() {
     assertEquals(Integer.valueOf(1), deployment.getSpec().getReplicas());
     assertEquals(dummy.getMetaName(),
                  deployment.getSpec().getSelector().getMatchLabels().get(kindName));
-}
+  }
 
   @Test
-public void testEventCreation() {
+  public void testEventCreation() {
     String action = "action";
     Event event = dummyOperator.generateEvent(dummy, action);
 
@@ -140,7 +143,7 @@ public void testEventCreation() {
   }
 
   @Test
-public void testUpdateStatus() {
+  public void testUpdateStatus() {
     assertNull(dummy.getStatus());
 
     dummyOperator.updateStatus(dummy);
@@ -154,7 +157,7 @@ public void testUpdateStatus() {
   }
 
   @Test
-public void testIsDesiredDeploymentWhenArgsDontMatch() {
+  public void testIsDesiredDeploymentWhenArgsDontMatch() {
     Container container = new ContainerBuilder()
                                 .withArgs(new String[0])
                                 .build();
@@ -173,7 +176,7 @@ public void testIsDesiredDeploymentWhenArgsDontMatch() {
   }
 
   @Test
-public void testIsDesiredDeploymentWhenReplicasDontMatch() {
+  public void testIsDesiredDeploymentWhenReplicasDontMatch() {
     PodTemplateSpec desiredPodTemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
     Container container = new ContainerBuilder()
                         .withArgs(desiredPodTemplateSpec.getSpec().getContainers().get(0).getArgs())
@@ -194,7 +197,7 @@ public void testIsDesiredDeploymentWhenReplicasDontMatch() {
   }
 
   @Test
-public void testIsDesiredDeploymentSuccess() {
+  public void testIsDesiredDeploymentSuccess() {
     PodTemplateSpec desiredPodTemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
     Container container = new ContainerBuilder()
                         .withArgs(desiredPodTemplateSpec.getSpec().getContainers().get(0).getArgs())
@@ -214,7 +217,7 @@ public void testIsDesiredDeploymentSuccess() {
   }
 
   @Test
-public void testHealth() {
+  public void testHealth() {
     Mockito.doReturn(true).when(enhancedClientMock).checkHealthiness(kindName);
     Health health = dummyOperator.health();
 
@@ -227,7 +230,7 @@ public void testHealth() {
   }
 
   @Test
-public void testCreateWhenDummyExistsAndDeploymentDoesNot() throws InterruptedException {
+  public void testCreateWhenDummyExistsAndDeploymentDoesNot() throws InterruptedException {
     String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
@@ -240,7 +243,7 @@ public void testCreateWhenDummyExistsAndDeploymentDoesNot() throws InterruptedEx
   }
 
   @Test
-public void testEditWhenDummyExistsAndDeploymentDoesAndIsDesired() throws InterruptedException {
+  public void testEditWhenDummyExistsAndDeploymentDoesAndIsDesired() throws InterruptedException {
     String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
@@ -267,7 +270,7 @@ public void testEditWhenDummyExistsAndDeploymentDoesAndIsDesired() throws Interr
   }
 
   @Test
-public void testEditWhenDummyExistsAndDeploymentDoesAndDiffers() throws InterruptedException {
+  public void testEditWhenDummyExistsAndDeploymentDoesAndDiffers() throws InterruptedException {
     String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
