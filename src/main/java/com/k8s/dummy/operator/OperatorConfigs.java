@@ -38,13 +38,8 @@ public class OperatorConfigs {
   }
 
   @Bean("operator.kindName")
-  public String getKingName(@Value("${custom.resource.name:Dummy}") String kindName) {
+  public String getKingName(@Value("${custom.resource.name}") String kindName) {
     return kindName;
-  }
-
-  @Bean("operator.resync.period")
-  public long getResyncPeriod(@Value("${operator.resync.period:40000}") String resync) {
-    return Long.valueOf(resync);
   }
 
   @Bean
@@ -55,7 +50,7 @@ public class OperatorConfigs {
   @Bean
   public Lister<Dummy> createDummyLister(@Autowired KubernetesClient client,
                                          @Autowired DummyEventHandler dummyEventHandler,
-                                         @Qualifier("operator.resync.period") long resync) {
+                                         @Value("#{${operator.resync.period}}") long resync) {
     SharedIndexInformer<Dummy> dummyInformer = client.customResources(Dummy.class, DummyList.class)
                                                 .inAnyNamespace()
                                                 .inform(dummyEventHandler, resync);
@@ -73,7 +68,7 @@ public class OperatorConfigs {
   @Bean
   public Lister<Deployment> createDeploymentLister(@Autowired KubernetesClient client,
                                                    @Autowired DeploymentEventHandler deploymentEventHandler,
-                                                   @Qualifier("operator.resync.period") long resync) {
+                                                   @Value("#{${operator.resync.period}}") long resync) {
     SharedIndexInformer<Deployment> deploymentInformer = client.apps().deployments()
                                                         .inAnyNamespace()
                                                         .inform(deploymentEventHandler, 2 * resync);

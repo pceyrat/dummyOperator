@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,14 +33,17 @@ import org.mockito.Mockito;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.core.task.AsyncTaskExecutor;
 
-public class DummyOperatorTests {
+/**
+ * Test class.
+ */
+public class DummyControllerTests {
 
   private static EnhancedClient enhancedClientMock;
   private static String kindName = "test";
   private static Lister<Dummy> dummyListerMock;
   private static Lister<Deployment> deployListerMock;
   private static AsyncTaskExecutor asyncTaskExecuterMock;
-  private static DummyOperator dummyOperator;
+  private static DummyController dummyOperator;
 
   private static final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
   private final ObjectMeta defaultMetadata = new ObjectMetaBuilder().withName("testName")
@@ -63,8 +67,9 @@ public class DummyOperatorTests {
     Mockito.doNothing().when(enhancedClientMock).updateStatus(any());
     Mockito.doNothing().when(enhancedClientMock).addEvent(any());
 
-    dummyOperator = new DummyOperator(enhancedClientMock,
+    dummyOperator = new DummyController(enhancedClientMock,
                                       kindName,
+                                      Map.of("xgeeks", "Dummy"),
                                       queue,
                                       dummyListerMock,
                                       deployListerMock,

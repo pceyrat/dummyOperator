@@ -13,7 +13,9 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("xgeeks.ki.com")
 public class Dummy extends CustomResource<DummySpec, DummyStatus> implements Namespaced {
 
-  /** Create ObjectReference using Dummy attributes.
+  /**
+   * Create ObjectReference using Dummy attributes.
+   *
    * @return ObjectReference
    */
   public ObjectReference getObjectReference() {
@@ -26,7 +28,9 @@ public class Dummy extends CustomResource<DummySpec, DummyStatus> implements Nam
                   .build();
   }
 
-  /** Create OwnerReference using Dummy attributes.
+  /**
+   * Create OwnerReference using Dummy attributes.
+   *
    * @return OwnerReference
    */
   public OwnerReference getOwnerReference() {

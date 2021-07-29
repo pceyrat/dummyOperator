@@ -1,4 +1,4 @@
-FROM maven:3-openjdk-11
+FROM maven:3-openjdk-16
 
 ARG VERSION=0.0.0
 

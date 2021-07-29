@@ -7,6 +7,9 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Event handler for deployments.
+ */
 public class DeploymentEventHandler extends EventHandler<Deployment> {
   private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentEventHandler.class);
 
@@ -31,7 +34,6 @@ public class DeploymentEventHandler extends EventHandler<Deployment> {
 
   @Override
   public void onAdd(Deployment deployment) {
-
   }
 
   @Override

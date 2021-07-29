@@ -7,11 +7,11 @@ This operator will manage the custom resources and it will create and deployment
 
 To see if the operator is up you can use the link to check its health http://localhost:8080/dummy/health. At the moment if fetches all Custom Resource Definitions and looks for one that has the Dummy one. If it does not find it it reports it as down.
 
-You can launch it running "mvn exec:java"
+You can launch it running "mvn compile exec:java" but for that you need kubernetes up and running and do "kubectl create -f yaml/dummycrd.yaml"
 
 You can also build an image using the Dockerfile with the command "docker build -t myoperator:1.0.0 --build-arg VERSION=1.0.0 ." for example and then execute the image in kubernetes "kubectl run myoperator -it --rm --image=myoperator:1.0.0"
 
-Alternatively you can create the kubernetes objects in the file `yaml/myoperator.yaml` which will create a deployment with a service with NodePort type. After the pod is initiated you can execute the command to see it in action "curl -s localhost:$(kubectl get svc myoperator -o jsonpath='{.spec.ports[].nodePort}')/dummy/info | jq ." (note: the jq executable is just to make it look prettier and normally is not installed by default)
+Alternatively you can create the kubernetes objects using the file `yaml/myoperator.yaml` which will create a deployment with a service with NodePort type. Beware that it was set using the docker desktop and if you are using minikube you might need to set minikube to use local docker images. After the pod is initiated you can execute the command to see it in action "curl -s localhost:$(kubectl get svc myoperator -o jsonpath='{.spec.ports[].nodePort}')/dummy/info | jq ." (note: the jq executable is just to make it look prettier and as far as I know it is not installed by default)
 
 
 ### Inspiration

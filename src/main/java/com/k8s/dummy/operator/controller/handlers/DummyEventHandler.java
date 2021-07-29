@@ -5,6 +5,9 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Event handler for our custom resource Dummy.
+ */
 public class DummyEventHandler extends EventHandler<Dummy> {
   private static final Logger LOGGER = LoggerFactory.getLogger(DummyEventHandler.class);
 

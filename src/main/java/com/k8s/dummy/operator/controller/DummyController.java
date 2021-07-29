@@ -3,7 +3,6 @@ package com.k8s.dummy.operator.controller;
 import com.k8s.dummy.operator.controller.client.EnhancedClient;
 import com.k8s.dummy.operator.model.v1beta1.Dummy;
 import com.k8s.dummy.operator.model.v1beta1.DummyStatus;
-import com.k8s.dummy.operator.utils.WorkaroundMicroTime;
 import io.fabric8.kubernetes.api.model.PodTemplateSpec;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -12,6 +11,7 @@ import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.api.model.events.v1.EventBuilder;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -19,44 +19,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Class where our control loop is implemented.
+ */
 @Component
-public class DummyOperator implements Runnable, HealthIndicator {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DummyOperator.class);
-  private static final String IMAGE = "busybox";
+public class DummyController implements Runnable, HealthIndicator {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DummyController.class);
+  private static final DateTimeFormatter k8sMicroTime =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'.'SSSSSSXXX");
 
   private final EnhancedClient enhancedClient;
   private final String kindName;
-  private final Map<String,String> operatorLabel;
-
+  private final Map<String, String> operatorLabels;
   private final BlockingQueue<String> queue;
 
   private final Lister<Dummy> dummyLister;
   private final Lister<Deployment> deployLister;
 
-  /** Create a DummyOperator object and launch a thread executing the run method.
-   * 
+  /**
+   * Create a DummyOperator object and launch a thread executing the run method.
+   *
    * @param enhancedClient client that follows an EnhancedClient interface
    * @param kindName custom resource kind name
+   * @param operatorLabels labels to add for events
    * @param queue a blocking queue from which will receive the resource names to reconcile
    * @param dummyLister a lister with Dummy objects
    * @param deployLister a lister with Deployment objects
    * @param asyncTaskExecuter a task executer to start a thread executing this object
    */
-  public DummyOperator(@Autowired EnhancedClient enhancedClient,
+  public DummyController(@Autowired EnhancedClient enhancedClient,
                        @Qualifier("operator.kindName") String kindName,
+                       @Value("#{${operator.labels}}") Map<String, String> operatorLabels,
                        @Qualifier("operator.queue") BlockingQueue<String> queue,
                        @Autowired Lister<Dummy> dummyLister,
                        @Autowired Lister<Deployment> deployLister,
                        @Autowired AsyncTaskExecutor asyncTaskExecuter) {
     this.enhancedClient = enhancedClient;
-    this.queue = queue;
     this.kindName = kindName;
-    this.operatorLabel = Map.of("xgeeks", kindName);
+    this.operatorLabels = operatorLabels;
+    this.queue = queue;
     this.dummyLister = dummyLister;
     this.deployLister = deployLister;
     asyncTaskExecuter.execute(this);
@@ -100,7 +107,8 @@ public class DummyOperator implements Runnable, HealthIndicator {
   }
 
 
-  /** Retrieve the deployment associated with the Dummy object and if it does not exist create it,
+  /**
+   * Retrieve the deployment associated with the Dummy object and if it does not exist create it,
    * if it exists, compare with the desired state and edit the deployment if they do not match.
    *
    * @param dummy Dummy object
@@ -124,7 +132,8 @@ public class DummyOperator implements Runnable, HealthIndicator {
   }
 
 
-  /** Generate a Deployment using the Dummy object and the generated pod
+  /**
+   * Generate a Deployment using the Dummy object and the generated pod
    * template (@see #method generatePodTemplateSpec).
    * Uses the kindName and the dummy name to label and as the selector.
    *
@@ -134,23 +143,24 @@ public class DummyOperator implements Runnable, HealthIndicator {
   public Deployment generateDeployment(Dummy dummy) {
     return new DeploymentBuilder()
                 .withNewMetadata()
-                    .withName(dummy.getMetaName())
-                    .withNamespace(dummy.getMetaspace())
-                    .addToLabels(kindName, dummy.getMetaName())
-                    .addToOwnerReferences(dummy.getOwnerReference())
-                    .endMetadata()
+                  .withName(dummy.getMetaName())
+                  .withNamespace(dummy.getMetaspace())
+                  .addToLabels(kindName, dummy.getMetaName())
+                  .addToOwnerReferences(dummy.getOwnerReference())
+                  .endMetadata()
                 .withNewSpec()
-                    .withReplicas(dummy.getSpec().getReplicas())
-                    .withTemplate(generatePodTemplateSpec(dummy))
-                    .withNewSelector()
-                        .addToMatchLabels(kindName, dummy.getMetaName())
-                        .endSelector()
-                    .endSpec()
+                  .withReplicas(dummy.getSpec().getReplicas())
+                  .withTemplate(generatePodTemplateSpec(dummy))
+                  .withNewSelector()
+                    .addToMatchLabels(kindName, dummy.getMetaName())
+                    .endSelector()
+                  .endSpec()
                 .build();
   }
 
 
-  /** Generate a pod specification template according with the Dummy attributes.
+  /**
+   * Generate a pod specification template according with the Dummy attributes.
    * Uses the IMAGE attribute to define the container image.
    * Uses the kindName and the dummy name to label.
    *
@@ -165,22 +175,24 @@ public class DummyOperator implements Runnable, HealthIndicator {
                         String.join(" ", dummy.getSpec().getExtra()), dummy.getSpec().getSleep())};
     return new PodTemplateSpecBuilder()
                 .withNewMetadata()
-                    .addToLabels(kindName, dummy.getMetaName())
-                    .endMetadata()
+                  .addToLabels(kindName, dummy.getMetaName())
+                  .endMetadata()
                 .withNewSpec()
-                    .addNewContainer()
-                        .withName(dummy.getMetaName() + "-container")
-                        .withImage(IMAGE)
-                        .withCommand(command)
-                        .withArgs(args)
-                        .endContainer()
-                    .endSpec()
+                  .addNewContainer()
+                    .withName(dummy.getMetaName() + "-container")
+                    .withImage("busybox")
+                    .withCommand(command)
+                    .withArgs(args)
+                    .endContainer()
+                  .endSpec()
                 .build();
   }
 
 
-  /** Create status if @param dummy does not have it or increment the timesChanged attribute
+  /**
+   * Create status if @param dummy does not have it or increment the timesChanged attribute
    * in the DummyStatus object.
+   *
    * @param dummy Dummy object
    * @return Dummy
    */
@@ -193,7 +205,8 @@ public class DummyOperator implements Runnable, HealthIndicator {
   }
 
 
-  /** Generate an event using the operatorLabel and Dummy attributes.
+  /**
+   * Generate an event using the operatorLabel and Dummy attributes.
    *
    * @param dummy Dummy object
    * @param action String object indicating the action
@@ -203,16 +216,16 @@ public class DummyOperator implements Runnable, HealthIndicator {
     String instance = this.getClass().getSimpleName().toLowerCase();
     return new EventBuilder()
                 .withNewMetadata()
-                    .withGenerateName(dummy.getMetaName() + "-" + action + "-")
-                    .withNamespace(dummy.getMetaspace())
-                    .withLabels(operatorLabel)
-                    .addToOwnerReferences(dummy.getOwnerReference())
-                    .endMetadata()
+                  .withGenerateName(dummy.getMetaName() + "-" + action + "-")
+                  .withNamespace(dummy.getMetaspace())
+                  .withLabels(operatorLabels)
+                  .addToOwnerReferences(dummy.getOwnerReference())
+                  .endMetadata()
                 .withType("Normal")
                 .withAction(action)
                 .withReason(action)
                 .withNote(dummy.getSpec().toString())
-                .withEventTime(new WorkaroundMicroTime(ZonedDateTime.now()))
+                .withNewEventTime(k8sMicroTime.format(ZonedDateTime.now()))
                 .withReportingController(instance)
                 .withReportingInstance(instance)
                 .withRegarding(dummy.getObjectReference())
@@ -220,7 +233,8 @@ public class DummyOperator implements Runnable, HealthIndicator {
   }
 
 
-  /** Compare if the number of replicas is the same and if the first container args
+  /**
+   * Compare if the number of replicas is the same and if the first container args
    * is equal between desired podTemplate and current deployment state.
    *
    * @param deployment current state of the deployment

@@ -10,6 +10,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An enhanced client that uses the KubernetesClient class from fabric8.
+ */
 public class EnhancedKubernetesClient implements EnhancedClient<KubernetesClient> {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnhancedKubernetesClient.class);
 
