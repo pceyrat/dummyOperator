@@ -38,9 +38,9 @@ spec:
       serviceAccount: myoperator
       containers:
       - env:
-        - name: PORT
+        - name: SERVER_PORT
           value: "80"
-        - name: SHOW_HEALTH_DETAILS
+        - name: SHOW_HEALTH_COMPONENTS
           value: "never"
         image: myoperator:1.0.0
         name: myoperator
