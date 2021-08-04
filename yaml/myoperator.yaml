@@ -42,7 +42,7 @@ spec:
           value: "80"
         - name: SHOW_HEALTH_COMPONENTS
           value: "never"
-        image: myoperator:1.0.0
+        image: operator:0.0.1-SNAPSHOT
         name: myoperator
         ports:
         - containerPort: 80
