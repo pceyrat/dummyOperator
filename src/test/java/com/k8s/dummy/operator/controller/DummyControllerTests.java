@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.k8s.dummy.operator.controller.client.EnhancedClient;
 import com.k8s.dummy.operator.model.v1beta1.Dummy;
@@ -29,7 +32,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.core.task.AsyncTaskExecutor;
 
@@ -38,8 +40,8 @@ import org.springframework.core.task.AsyncTaskExecutor;
  */
 public class DummyControllerTests {
 
+  private static final String kindName = "test";
   private static EnhancedClient enhancedClientMock;
-  private static String kindName = "test";
   private static Lister<Dummy> dummyListerMock;
   private static Lister<Deployment> deployListerMock;
   private static AsyncTaskExecutor asyncTaskExecuterMock;
@@ -55,17 +57,17 @@ public class DummyControllerTests {
    * EnhancedClient mock does nothing when a method that would imply a change is called.
    */
   @BeforeAll
-  public static void setup() {
+  static void setup() {
     enhancedClientMock = mock(EnhancedClient.class);
     dummyListerMock = mock(Lister.class);
     deployListerMock = mock(Lister.class);
     asyncTaskExecuterMock = mock(AsyncTaskExecutor.class);
 
-    Mockito.doNothing().when(asyncTaskExecuterMock).execute(any());
-    Mockito.doNothing().when(enhancedClientMock).addDeployment(any());
-    Mockito.doNothing().when(enhancedClientMock).editDeployment(any(), any());
-    Mockito.doNothing().when(enhancedClientMock).updateStatus(any());
-    Mockito.doNothing().when(enhancedClientMock).addEvent(any());
+    doNothing().when(asyncTaskExecuterMock).execute(any());
+    doNothing().when(enhancedClientMock).addDeployment(any());
+    doNothing().when(enhancedClientMock).editDeployment(any(), any());
+    doNothing().when(enhancedClientMock).updateStatus(any());
+    doNothing().when(enhancedClientMock).addEvent(any());
 
     dummyOperator = new DummyController(enhancedClientMock,
                                       kindName,
@@ -80,7 +82,7 @@ public class DummyControllerTests {
    * and without a status.
    */
   @BeforeEach
-  public void dummySetup() {
+  void dummySetup() {
     dummy = new Dummy();
 
     dummy.setMetadata(defaultMetadata);
@@ -95,7 +97,7 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testPodTemplateCreation() {
+  void testPodTemplateCreation() {
     PodTemplateSpec podtemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
 
     assertEquals(1, podtemplateSpec.getMetadata().getLabels().size());
@@ -108,13 +110,13 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testPodTemplateCreationFailedIfFieldsNotDefined() {
+  void testPodTemplateCreationFailedIfFieldsNotDefined() {
     dummy.setSpec(new DummySpec());;
     assertThrows(NullPointerException.class, () -> dummyOperator.generatePodTemplateSpec(dummy));
   }
 
   @Test
-  public void testDeploymentCreation() {
+  void testDeploymentCreation() {
     Deployment deployment = dummyOperator.generateDeployment(dummy);
 
     assertEquals(dummy.getMetaName(), deployment.getMetadata().getName());
@@ -131,8 +133,8 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testEventCreation() {
-    String action = "action";
+  void testEventCreation() {
+    final String action = "action";
     Event event = dummyOperator.generateEvent(dummy, action);
 
     assertTrue(event.getMetadata().getGenerateName().startsWith(dummy.getMetaName()));
@@ -148,7 +150,7 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testUpdateStatus() {
+  void testUpdateStatus() {
     assertNull(dummy.getStatus());
 
     dummyOperator.updateStatus(dummy);
@@ -162,7 +164,7 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testIsDesiredDeploymentWhenArgsDontMatch() {
+  void testIsDesiredDeploymentWhenArgsDontMatch() {
     Container container = new ContainerBuilder()
                                 .withArgs(new String[0])
                                 .build();
@@ -181,7 +183,7 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testIsDesiredDeploymentWhenReplicasDontMatch() {
+  void testIsDesiredDeploymentWhenReplicasDontMatch() {
     PodTemplateSpec desiredPodTemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
     Container container = new ContainerBuilder()
                         .withArgs(desiredPodTemplateSpec.getSpec().getContainers().get(0).getArgs())
@@ -202,7 +204,7 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testIsDesiredDeploymentSuccess() {
+  void testIsDesiredDeploymentSuccess() {
     PodTemplateSpec desiredPodTemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
     Container container = new ContainerBuilder()
                         .withArgs(desiredPodTemplateSpec.getSpec().getContainers().get(0).getArgs())
@@ -222,34 +224,34 @@ public class DummyControllerTests {
   }
 
   @Test
-  public void testHealth() {
-    Mockito.doReturn(true).when(enhancedClientMock).checkHealthiness(kindName);
+  void testHealth() {
+    doReturn(true).when(enhancedClientMock).checkHealthiness(kindName);
     Health health = dummyOperator.health();
 
     assertEquals("UP", health.getStatus().getCode());
 
-    Mockito.doReturn(false).when(enhancedClientMock).checkHealthiness(kindName);
+    doReturn(false).when(enhancedClientMock).checkHealthiness(kindName);
     health = dummyOperator.health();
 
     assertEquals("DOWN", health.getStatus().getCode());
   }
 
   @Test
-  public void testCreateWhenDummyExistsAndDeploymentDoesNot() throws InterruptedException {
-    String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
+  void testCreateWhenDummyExistsAndDeploymentDoesNot() throws InterruptedException {
+    final String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
-    Mockito.doReturn(dummy).when(dummyListerMock).get(fqn);
-    Mockito.doReturn(List.of()).when(deployListerMock).list();
+    doReturn(dummy).when(dummyListerMock).get(fqn);
+    doReturn(List.of()).when(deployListerMock).list();
 
     dummyOperator.controlLoop();
 
-    Mockito.verify(enhancedClientMock).addDeployment(dummyOperator.generateDeployment(dummy));
+    verify(enhancedClientMock).addDeployment(dummyOperator.generateDeployment(dummy));
   }
 
   @Test
-  public void testEditWhenDummyExistsAndDeploymentDoesAndIsDesired() throws InterruptedException {
-    String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
+  void testEditWhenDummyExistsAndDeploymentDoesAndIsDesired() throws InterruptedException {
+    final String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
     PodTemplateSpec desiredPodTemplateSpec = dummyOperator.generatePodTemplateSpec(dummy);
@@ -266,17 +268,17 @@ public class DummyControllerTests {
                                   .endSpec()
                                 .build();
 
-    Mockito.doReturn(dummy).when(dummyListerMock).get(fqn);
-    Mockito.doReturn(List.of(deployment)).when(deployListerMock).list();
+    doReturn(dummy).when(dummyListerMock).get(fqn);
+    doReturn(List.of(deployment)).when(deployListerMock).list();
 
     dummyOperator.controlLoop();
 
-    Mockito.verify(enhancedClientMock, times(0)).updateStatus(dummy);
+    verify(enhancedClientMock, times(0)).updateStatus(dummy);
   }
 
   @Test
-  public void testEditWhenDummyExistsAndDeploymentDoesAndDiffers() throws InterruptedException {
-    String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
+  void testEditWhenDummyExistsAndDeploymentDoesAndDiffers() throws InterruptedException {
+    final String fqn = String.format("%s/%s", dummy.getMetaspace(), dummy.getMetaName());
     queue.add(fqn);
 
     Container container = new ContainerBuilder()
@@ -292,12 +294,12 @@ public class DummyControllerTests {
                                   .endSpec()
                                 .build();
 
-    Mockito.doReturn(dummy).when(dummyListerMock).get(fqn);
-    Mockito.doReturn(List.of(deployment)).when(deployListerMock).list();
+    doReturn(dummy).when(dummyListerMock).get(fqn);
+    doReturn(List.of(deployment)).when(deployListerMock).list();
 
     dummyOperator.controlLoop();
 
-    Mockito.verify(enhancedClientMock).editDeployment(dummy,
+    verify(enhancedClientMock).editDeployment(dummy,
                    dummyOperator.generatePodTemplateSpec(dummy));
   }
 }

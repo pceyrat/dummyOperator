@@ -10,7 +10,7 @@ import java.util.Queue;
 public abstract class EventHandler<T> implements ResourceEventHandler<T> {
   private final Queue<String> queue;
 
-  public EventHandler(Queue<String> queue) {
+  protected EventHandler(Queue<String> queue) {
     this.queue = queue;
   }
 

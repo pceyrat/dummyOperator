@@ -56,7 +56,7 @@ public class OperatorConfigs {
                                                 .inform(dummyEventHandler, resync);
 
     while (!dummyInformer.hasSynced()) {};
-    return new Lister<Dummy>(dummyInformer.getIndexer());
+    return new Lister<>(dummyInformer.getIndexer());
   }
 
   @Bean
@@ -74,6 +74,6 @@ public class OperatorConfigs {
                                                         .inform(deploymentEventHandler, 2 * resync);
 
     while (!deploymentInformer.hasSynced()) {};
-    return new Lister<Deployment>(deploymentInformer.getIndexer());
+    return new Lister<>(deploymentInformer.getIndexer());
   }
 }

@@ -101,7 +101,7 @@ public class DummyController implements Runnable, HealthIndicator {
     String dummyKey = queue.take();
     Optional.ofNullable(dummyLister.get(dummyKey))
         .ifPresentOrElse(
-            dummy -> reconcile(dummy),
+            this::reconcile,
             () -> LOGGER.info("Dummy resource not in cache")
         );
   }
@@ -168,7 +168,6 @@ public class DummyController implements Runnable, HealthIndicator {
    * @return PodTemplateSpec
    */
   public PodTemplateSpec generatePodTemplateSpec(Dummy dummy) {
-    String command = "/bin/sh";
     String[] args = {"-c", String.format(
                         "/bin/echo \"%s\n%s\"; /bin/sleep %d",
                         dummy.getSpec().getQuote(),
@@ -181,7 +180,7 @@ public class DummyController implements Runnable, HealthIndicator {
                   .addNewContainer()
                     .withName(dummy.getMetaName() + "-container")
                     .withImage("busybox")
-                    .withCommand(command)
+                    .withCommand("/bin/sh")
                     .withArgs(args)
                     .endContainer()
                   .endSpec()
@@ -199,7 +198,7 @@ public class DummyController implements Runnable, HealthIndicator {
   public Dummy updateStatus(Dummy dummy) {
     Optional<DummyStatus> oldStatus = Optional.ofNullable(dummy.getStatus());
     oldStatus.ifPresentOrElse(
-        st -> st.incrementTimesChanged(),
+        DummyStatus::incrementTimesChanged,
         () -> dummy.setStatus(new DummyStatus()));
     return dummy;
   }

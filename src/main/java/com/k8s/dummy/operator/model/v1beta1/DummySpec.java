@@ -16,7 +16,7 @@ public class DummySpec {
   }
 
   public String getQuote() {
-    return this.quote;
+    return quote;
   }
 
   public void setSleep(int sleep) {
@@ -24,7 +24,7 @@ public class DummySpec {
   }
 
   public int getSleep() {
-    return this.sleep;
+    return sleep;
   }
 
   public void setReplicas(int replicas) {
@@ -32,7 +32,7 @@ public class DummySpec {
   }
 
   public int getReplicas() {
-    return this.replicas;
+    return replicas;
   }
 
   public void setExtra(String[] extra) {
@@ -40,7 +40,7 @@ public class DummySpec {
   }
 
   public String[] getExtra() {
-    return this.extra;
+    return extra;
   }
 
   @Override
