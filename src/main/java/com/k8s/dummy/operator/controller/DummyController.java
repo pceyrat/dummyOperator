@@ -70,6 +70,15 @@ public class DummyController implements Runnable, HealthIndicator {
   }
 
   @Override
+  public Health health() {
+    String details = "Dummy Custom Resource Definition";
+    if (enhancedClient.checkHealthiness(kindName)) {
+      return Health.up().withDetail(details, "Available").build();
+    }
+    return Health.down().withDetail(details, "Not Available").build();
+  }
+
+  @Override
   public void run() {
     LOGGER.info("Starting Dummy controller");
     while (true) {
@@ -80,16 +89,6 @@ public class DummyController implements Runnable, HealthIndicator {
       }
     }
   }
-
-  @Override
-  public Health health() {
-    String details = "Dummy Custom Resource Definition";
-    if (enhancedClient.checkHealthiness(kindName)) {
-      return Health.up().withDetail(details, "Available").build();
-    }
-    return Health.down().withDetail(details, "Not Available").build();
-  }
-
 
   /** 
    * Control loop which takes the next resource from queue and if a Dummy

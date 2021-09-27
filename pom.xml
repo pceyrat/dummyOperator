@@ -103,15 +103,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <mainClass>com.k8s.dummy.operator.OperatorApplication</mainClass>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
-
 </project>

@@ -19,11 +19,12 @@ At the moment if fetches all Custom Resource Definitions and looks for the Dummy
 
 ## How to launch
 
-Before launching you need kubernetes up and running and it also needs to have the Dummy custom resource (which you can create by doing "kubectl apply -f yaml/dummycrd.yaml"). Afterwards, you can launch it by executing "mvn compile exec:java"
+Before launching you need kubernetes up and running and it also needs to have the Dummy custom resource (which you can create by doing "kubectl apply -f yaml/dummycrd.yaml"). Afterwards, you can launch it by executing "mvn spring-boot:run"
 
 Another alternative to launch is by building a docker image with the command
 ```bash
 mvn spring-boot:build-image
+# or using the Dockerfile and running the command -> docker build -t operator:0.0.1-SNAPSHOT --build-arg VERSION=0.0.1-SNAPSHOT .
 ``` 
 And then launch a pod with that image
 ```bash
