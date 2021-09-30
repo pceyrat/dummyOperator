@@ -1,7 +1,7 @@
 # Dummy Operator
 
 ## Introduction
-This project is followed by the medium post [Kubernetes Dummy Operator in Java](). Go check it out for a more detailed intro and to see a demonstration.
+This project is followed by the medium post [Kubernetes Dummy Operator in Java](https://medium.com/xgeeks/kubernetes-dummy-operator-in-java-6b2f26198a55). Go check it out for a more detailed intro and to see a demonstration.
 
 ## Operator goals
 1. manage the custom resources
